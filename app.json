@@ -1,0 +1,594 @@
+{
+  nfo": {
+    "_postman_id": "8f7c4d5e-1f23-4a56-b78c-9d0e1f2a3b4c",
+    "name": "VideoChat Application",
+    "description": "A collection to test the VideoChat application's WebSocket and HTTP endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "WebSocket Tests",
+      "item": [
+        {
+          "name": "WebSocket Connection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "",
+                  "// Store WebSocket connection in a global variable",
+                  "if (pm.globals.has(\"webSocketConnection\")) {",
+                  "    pm.globals.get(\"webSocketConnection\").close();",
+                  "}",
+                  "",
+                  "// Initialize SockJS connection",
+                  "const sockjs = new SockJS(pm.environment.get(\"baseUrl\") + \"/ws\");",
+                  "",
+                  "// Initialize Stomp client",
+                  "const stompClient = Stomp.over(sockjs);",
+                  "",
+                  "// Connect to WebSocket server",
+                  "stompClient.connect({}, function() {",
+                  "    console.log(\"Connected to WebSocket!\");",
+                  "    ",
+                  "    // Subscribe to session topic",
+                  "    stompClient.subscribe(`/topic/session/${sessionId}`, function(message) {",
+                  "        console.log(\"Received message:\", message.body);",
+                  "        pm.globals.set(\"lastWebSocketMessage\", message.body);",
+                  "    });",
+                  "    ",
+                  "    pm.globals.set(\"webSocketConnection\", stompClient);",
+                  "    pm.test(\"WebSocket connection established\", function() {",
+                  "        pm.expect(stompClient.connected).to.be.true;",
+                  "    });",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ws",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ws"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Join Queue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "",
+                  "pm.test(\"Send join queue message\", function() {",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        stompClient.send(\"/app/queue.join\", {}, JSON.stringify({",
+                  "            sessionId: sessionId,",
+                  "            type: 'JOIN'",
+                  "        }));",
+                  "        console.log(`Sent JOIN request with sessionId: ${sessionId}`);",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        pm.expect.fail(\"WebSocket not connected\");",
+                  "    }",
+                  "});",
+                  "",
+                  "// Wait for potential match response",
+                  "setTimeout(function() {",
+                  "    const lastMessage = pm.globals.get(\"lastWebSocketMessage\");",
+                  "    if (lastMessage) {",
+                  "        const messageObj = JSON.parse(lastMessage);",
+                  "        if (messageObj.type === \"MATCH_FOUND\") {",
+                  "            pm.collectionVariables.set(\"partnerId\", messageObj.targetSessionId);",
+                  "            console.log(`Match found with partner: ${messageObj.targetSessionId}`);",
+                  "        }",
+                  "    }",
+                  "}, 1000);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate a session ID if not already set",
+                  "if (!pm.collectionVariables.get(\"sessionId\")) {",
+                  "    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {",
+                  "        const r = Math.random() * 16 | 0;",
+                  "        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);",
+                  "    });",
+                  "    pm.collectionVariables.set(\"sessionId\", uuid);",
+                  "    console.log(`Generated sessionId: ${uuid}`);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/queue.join",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "queue",
+                "join"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Leave Queue",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "",
+                  "pm.test(\"Send leave queue message\", function() {",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        stompClient.send(\"/app/queue.leave\", {}, JSON.stringify({",
+                  "            sessionId: sessionId,",
+                  "            type: 'LEAVE'",
+                  "        }));",
+                  "        console.log(`Sent LEAVE request with sessionId: ${sessionId}`);",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        pm.expect.fail(\"WebSocket not connected\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/queue.leave",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "queue",
+                "leave"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send WebRTC Offer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "const partnerId = pm.collectionVariables.get(\"partnerId\");",
+                  "",
+                  "// Only send if we have a partner ID (matched)",
+                  "pm.test(\"Send WebRTC offer\", function() {",
+                  "    if (!partnerId) {",
+                  "        console.log(\"No partner ID found. Skipping offer.\");",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        // Sample SDP offer (in real scenarios, this would come from the WebRTC API)",
+                  "        const sampleOffer = {",
+                  "            type: \"offer\",",
+                  "            sdp: \"v=0\\r\\no=- 123456789 2 IN IP4 127.0.0.1\\r\\ns=-\\r\\nt=0 0\\r\\na=group:BUNDLE audio video\\r\\n\"",
+                  "        };",
+                  "        ",
+                  "        stompClient.send(\"/app/session.signal\", {}, JSON.stringify({",
+                  "            type: 'OFFER',",
+                  "            sessionId: sessionId,",
+                  "            targetSessionId: partnerId,",
+                  "            sdp: sampleOffer",
+                  "        }));",
+                  "        console.log(`Sent OFFER to partner: ${partnerId}`);",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        pm.expect.fail(\"WebSocket not connected\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/session.signal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "session",
+                "signal"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send WebRTC Answer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "const partnerId = pm.collectionVariables.get(\"partnerId\");",
+                  "",
+                  "// Only send if we have a partner ID (matched)",
+                  "pm.test(\"Send WebRTC answer\", function() {",
+                  "    if (!partnerId) {",
+                  "        console.log(\"No partner ID found. Skipping answer.\");",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        // Sample SDP answer (in real scenarios, this would come from the WebRTC API)",
+                  "        const sampleAnswer = {",
+                  "            type: \"answer\",",
+                  "            sdp: \"v=0\\r\\no=- 987654321 1 IN IP4 127.0.0.1\\r\\ns=-\\r\\nt=0 0\\r\\na=group:BUNDLE audio video\\r\\n\"",
+                  "        };",
+                  "        ",
+                  "        stompClient.send(\"/app/session.signal\", {}, JSON.stringify({",
+                  "            type: 'ANSWER',",
+                  "            sessionId: sessionId,",
+                  "            targetSessionId: partnerId,",
+                  "            sdp: sampleAnswer",
+                  "        }));",
+                  "        console.log(`Sent ANSWER to partner: ${partnerId}`);",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        pm.expect.fail(\"WebSocket not connected\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/session.signal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "session",
+                "signal"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send ICE Candidate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "const partnerId = pm.collectionVariables.get(\"partnerId\");",
+                  "",
+                  "// Only send if we have a partner ID (matched)",
+                  "pm.test(\"Send ICE candidate\", function() {",
+                  "    if (!partnerId) {",
+                  "        console.log(\"No partner ID found. Skipping ICE candidate.\");",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        // Sample ICE candidate (in real scenarios, this would come from the WebRTC API)",
+                  "        const sampleCandidate = {",
+                  "            candidate: \"candidate:1 1 UDP 2122194687 192.168.1.100 53100 typ host\",",
+                  "            sdpMid: \"0\",",
+                  "            sdpMLineIndex: 0",
+                  "        };",
+                  "        ",
+                  "        stompClient.send(\"/app/session.signal\", {}, JSON.stringify({",
+                  "            type: 'ICE_CANDIDATE',",
+                  "            sessionId: sessionId,",
+                  "            targetSessionId: partnerId,",
+                  "            candidate: sampleCandidate",
+                  "        }));",
+                  "        console.log(`Sent ICE_CANDIDATE to partner: ${partnerId}`);",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        pm.expect.fail(\"WebSocket not connected\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/session.signal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "session",
+                "signal"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Chat Message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "const partnerId = pm.collectionVariables.get(\"partnerId\");",
+                  "",
+                  "// Only send if we have a partner ID (matched)",
+                  "pm.test(\"Send chat message\", function() {",
+                  "    if (!partnerId) {",
+                  "        console.log(\"No partner ID found. Skipping chat message.\");",
+                  "        return;",
+                  "    }",
+                  "    ",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        stompClient.send(\"/app/session.message\", {}, JSON.stringify({",
+                  "            type: 'CHAT_MESSAGE',",
+                  "            sessionId: sessionId,",
+                  "            targetSessionId: partnerId,",
+                  "            content: \"Hello from Postman! This is a test message.\"",
+                  "        }));",
+                  "        console.log(`Sent CHAT_MESSAGE to partner: ${partnerId}`);",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        pm.expect.fail(\"WebSocket not connected\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/session.message",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "session",
+                "message"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disconnect Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "const sessionId = pm.collectionVariables.get(\"sessionId\");",
+                  "const partnerId = pm.collectionVariables.get(\"partnerId\");",
+                  "",
+                  "pm.test(\"Send disconnect message\", function() {",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        stompClient.send(\"/app/session.disconnect\", {}, JSON.stringify({",
+                  "            type: 'DISCONNECT',",
+                  "            sessionId: sessionId,",
+                  "            targetSessionId: partnerId",
+                  "        }));",
+                  "        console.log(`Sent DISCONNECT with sessionId: ${sessionId}`);",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        pm.expect.fail(\"WebSocket not connected\");",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/app/session.disconnect",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "app",
+                "session",
+                "disconnect"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Close WebSocket Connection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const stompClient = pm.globals.get(\"webSocketConnection\");",
+                  "",
+                  "pm.test(\"Close WebSocket connection\", function() {",
+                  "    if (stompClient && stompClient.connected) {",
+                  "        stompClient.disconnect();",
+                  "        console.log(\"WebSocket connection closed\");",
+                  "        pm.expect(true).to.be.true;",
+                  "    } else {",
+                  "        console.log(\"WebSocket not connected\");",
+                  "    }",
+                  "    ",
+                  "    pm.globals.unset(\"webSocketConnection\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "close"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST API Tests",
+      "item": [
+        {
+          "name": "Get Chat History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(Array.isArray(responseJson)).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/chat/history?sessionId1={{sessionId}}&sessionId2={{partnerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "chat",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "sessionId1",
+                  "value": "{{sessionId}}"
+                },
+                {
+                  "key": "sessionId2",
+                  "value": "{{partnerId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "partnerId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

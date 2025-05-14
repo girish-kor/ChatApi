@@ -1,0 +1,15 @@
+import { SERVER_URL, MOCK_MODE, generateUUID } from '../utils/utils.js';const mockSessions=MOCK_MODE?[{id:'mock-session-1',userSessionId1:'mock-queue-1',userSessionId2:'mock-queue-2',active:true}]:[];
+
+async function postSession(userSessionId1,userSessionId2){if(MOCK_MODE){const mockSession={id:`mock-session-${Math.floor(Math.random()*1000)}`,userSessionId1,userSessionId2,active:true};mockSessions.push(mockSession);return{data:mockSession,updateIds:['session-get-id','session-put-id','session-delete-id'],newId:mockSession.id};}const response=await fetch(`${SERVER_URL}/api/sessions`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userSessionId1,userSessionId2}),credentials:'include'});if(!response.ok)throw new Error(`HTTP ${response.status}`);const data=await response.json();return{data,updateIds:['session-get-id','session-put-id','session-delete-id'],newId:data.id};}
+
+async function getSession(id){if(MOCK_MODE){return mockSessions.find(session=>session.id===id)||mockSessions[0]||{id:'Not found'};}const response=await fetch(`${SERVER_URL}/api/sessions/${id}`,{method:'GET',credentials:'include'});if(!response.ok)throw new Error(`HTTP ${response.status}`);return await response.json();}
+
+async function getAllSessions(){if(MOCK_MODE)return mockSessions;const response=await fetch(`${SERVER_URL}/api/sessions`,{method:'GET',credentials:'include'});if(!response.ok)throw new Error(`HTTP ${response.status}`);return await response.json();}
+
+async function putSession(id,userSessionId1,userSessionId2,active){if(MOCK_MODE){const index=mockSessions.findIndex(session=>session.id===id);if(index===-1)throw new Error('Session not found');const updated={id,userSessionId1,userSessionId2,active};mockSessions[index]=updated;return updated;}const response=await fetch(`${SERVER_URL}/api/sessions/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,userSessionId1,userSessionId2,active}),credentials:'include'});if(!response.ok)throw new Error(`HTTP ${response.status}`);return await response.json();}
+
+async function deleteSession(id){if(MOCK_MODE){const index=mockSessions.findIndex(session=>session.id===id);if(index!==-1){mockSessions.splice(index,1);return'Deleted successfully';}return'Session not found';}const response=await fetch(`${SERVER_URL}/api/sessions/${id}`,{method:'DELETE',credentials:'include'});return response.ok?'Deleted successfully':`Failed to delete (HTTP ${response.status})`; }
+
+async function getRandomSessionId(){if(MOCK_MODE){return mockSessions.length>0?mockSessions[Math.floor(Math.random()*mockSessions.length)].id:generateUUID();}try{const response=await fetch(`${SERVER_URL}/api/sessions`,{method:'GET',credentials:'include'});if(!response.ok)return generateUUID();const sessions=await response.json();if(sessions.length===0)return generateUUID();return sessions[Math.floor(Math.random()*sessions.length)].id;}catch(error){return generateUUID();}}
+
+export { postSession, getSession, getAllSessions, putSession, deleteSession, getRandomSessionId };
