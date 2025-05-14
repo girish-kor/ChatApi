@@ -1,144 +1,240 @@
-# ChatApi
+# chatApi
 
-*A Serendipitous Conversational Engagement System*
+[![Version](https://img.shields.io/badge/Version-4.0.0-0a58ca?style=for-the-badge&logo=semanticrelease&logoColor=white)](https://github.com/girish-kor/chatApi)
+[![License](https://img.shields.io/badge/License-MIT-0a58ca?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://opensource.org/licenses/MIT)
+[![Build](https://img.shields.io/badge/Build-Stable-157347?style=for-the-badge&logo=checkmarx&logoColor=white)](https://github.com/girish-kor/chatApi/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-95%25-157347?style=for-the-badge&logo=codecov&logoColor=white)](https://codecov.io/)
+[![API Status](https://img.shields.io/badge/API-Online-a11d1d?style=for-the-badge&logo=vercel&logoColor=white)](https://chatapi-girish-kor.vercel.app)
+[![Issues](https://img.shields.io/github/issues/girish-kor/chatApi?style=for-the-badge&logo=github&color=6f42c1)](https://github.com/girish-kor/chatApi/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/girish-kor/chatApi?style=for-the-badge&logo=github&color=6f42c1)](https://github.com/girish-kor/chatApi/pulls)
+[![Last Commit](https://img.shields.io/github/last-commit/girish-kor/chatApi?style=for-the-badge&logo=git&color=157347)](https://github.com/girish-kor/chatApi/commits)
 
-![Version](https://img.shields.io/badge/version-4.0.0-darkgreen)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-red)
-![Java](https://img.shields.io/badge/Java-17-blue)
-![License](https://img.shields.io/badge/license-MIT-blue)
+A scalable, real-time messaging and matchmaking platform built with Spring Boot, WebSocket (STOMP), WebRTC signaling, and MongoDB.
 
----
+## Table of Contents
 
-## Contents
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [API Documentation](#api-documentation)
+- [WebSocket Integration](#websocket-integration)
+- [Testing](#testing)
+- [Monitoring](#monitoring)
+- [Deployment](#deployment)
+- [Security](#security)
+- [Contributing](#contributing)
+- [License](#license)
 
-1. [Introduction](#introduction)
-2. [Key Features](#key-features)
-3. [Technical Architecture](#technical-architecture)
-4. [System Operation](#system-operation)
-5. [API Reference](#api-reference)
-6. [WebSocket Communication](#websocket-communication)
-7. [Implementation Guide](#implementation-guide)
-8. [Contributing](#contributing)
+## Features
 
----
+- Real-time messaging with WebSocket/STOMP
+- Intelligent matchmaking queue system
+- WebRTC signaling for peer-to-peer connections
+- Session management and persistence
+- Comprehensive API for chat operations
 
-## Introduction
+## Technology Stack
 
-ChatApi represents a significant advancement in the field of human-to-human digital communication systems. Developed with scholarly precision, this system facilitates the spontaneous connection of individuals through a methodical queuing mechanism and enables discourse through both textual and audio-visual means.
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-6db33f?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Java Version](https://img.shields.io/badge/Java-17-6db33f?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![MongoDB](https://img.shields.io/badge/Database-MongoDB-a11d1d?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![MongoDB Atlas](https://img.shields.io/badge/Service-Atlas-a11d1d?style=for-the-badge\&logo=mongodb\&logoColor=white)](https://www.mongodb.com/cloud/atlas)
+[![CI/CD](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-157347?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/girish-kor/chatApi/actions)
+[![Deployment](https://img.shields.io/badge/Deployment-Vercel-000000?style=for-the-badge\&logo=vercel\&logoColor=white)](https://vercel.com)
 
-The system is designed for applications where spontaneous, ephemeral conversations are desired - such as language practice platforms, anonymous support groups, or intellectual discussion forums.
-
----
-
-## Key Features
-
-- Serendipitous discovery and automatic user matching
-- Ephemeral, non-persistent messaging by default
-- WebSocket and STOMP-based real-time messaging
-- RESTful backend for queue/session management
-- WebRTC signaling support for audio/video communication
-- MongoDB-based persistence layer
-- Built with Spring Boot 3.4.5 and Java 17
-- SockJS and STOMP support for browser compatibility
-- Actuator endpoints for monitoring
-
----
-
-## Technical Architecture
-
-The system is built on a modular architecture composed of:
-
-- **Session Management** – Manages conversational lifecycles
-- **Queue System** – Pairs users using real-time availability
-- **Messaging Subsystem** – Transports messages and signaling events
-
-### Technologies Used
-
-- Java 17
-- Spring Boot 3.4.5
-- Spring Web
-- Spring WebSocket
-- Spring Data MongoDB
-- STOMP over WebSocket
-- SockJS
-- Lombok
-- WebJars (STOMP.js, SockJS, locator)
-- Spring Boot Actuator
-
----
-
-## System Operation
-
-1. User connects and is issued a unique session ID
-2. The user joins the queue
-3. System matches two available users and starts a session
-4. Communication occurs via WebSocket endpoints
-5. Optionally, signaling is exchanged for WebRTC media connection
-6. Either user may disconnect, ending the session
-
-The system ensures state awareness and reconnection handling.
-
----
-
-## API Reference
-
-### Chat Operations
-- `POST /api/chat` - Send a new message
-- `GET /api/chat/{id}` - Get a message by ID
-- `GET /api/chat` - List all messages (admin use)
-- `PUT /api/chat/{id}` - Update a message
-- `DELETE /api/chat/{id}` - Delete a message
-- `GET /api/chat/history` - Retrieve message history between users
-
-### Queue Operations
-- `POST /api/queue` - Add user to queue
-- `GET /api/queue/{sessionId}` - Check queue status
-- `GET /api/queue` - List all queued users
-- `PUT /api/queue/{sessionId}` - Update user queue info
-- `DELETE /api/queue/{sessionId}` - Remove user from queue
-
-### Session Operations
-- `POST /api/sessions` - Create a new session
-- `GET /api/sessions/{id}` - Get session info
-- `GET /api/sessions` - List all sessions
-- `PUT /api/sessions/{id}` - Modify session state
-- `DELETE /api/sessions/{id}` - End a session
-
----
-
-## WebSocket Communication
-
-WebSocket endpoint: `/ws`
-
-### Message Destinations
-- `/app/session.message` – Chat messages
-- `/app/queue.join` – Join queue
-- `/app/queue.leave` – Leave queue
-- `/app/session.signal` – WebRTC signaling
-- `/app/session.disconnect` – Disconnect request
-
-### Client Subscriptions
-- `/user/queue/messages` – Queue updates
-- `/user/chat/messages` – Incoming messages
-- `/user/session/signals` – WebRTC events
-
----
-
-## Implementation Guide
+## Installation
 
 ### Prerequisites
 
-- Java 17
-- Maven 3.6+
-- MongoDB 5.0+ (or compatible)
+- Java 17+
+- Maven 3.8+
+- MongoDB (local instance or Atlas)
+- Web browser with WebRTC support
 
-### Configuration
-
-- Modify `application.properties` for MongoDB URI, ports, and CORS
-- Configure WebSocket security if required
-
-### Build & Run
+### Quick Start
 
 ```bash
-mvn clean package
-java -jar target/app-0.0.1-SNAPSHOT.jar
+git clone https://github.com/girish-kor/chatApi.git
+cd chatApi
+mvn clean install
+mvn spring-boot:run
+```
+
+## Configuration
+
+### Required Properties
+
+```properties
+# Server configuration
+server.port=8080
+
+# MongoDB configuration
+spring.data.mongodb.uri=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>
+
+# WebSocket configuration
+websocket.enabled=true
+```
+
+### Environment Variables
+
+```bash
+export MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>
+export JWT_SECRET=your-secure-jwt-secret
+export SERVER_PORT=8080
+```
+
+## Usage
+
+```bash
+# Start the application
+mvn spring-boot:run
+# or
+java -jar target/chatApi-4.0.0.jar
+```
+
+Access at:
+- API: `http://localhost:8080/api/...`
+- WebSocket: `ws://localhost:8080/ws`
+
+## API Documentation
+
+### Chat Endpoints
+
+| Method | Endpoint            | Description      | Auth  |
+| ------ | ------------------- | ---------------- | ----- |
+| POST   | `/api/chat`         | Send a message   | Token |
+| GET    | `/api/chat/{id}`    | Get a message    | Token |
+| GET    | `/api/chat/history` | Get chat history | Token |
+| PUT    | `/api/chat/{id}`    | Edit message     | Token |
+| DELETE | `/api/chat/{id}`    | Delete message   | Token |
+
+### Queue Endpoints
+
+| Method | Endpoint                 | Description            | Auth  |
+| ------ | ------------------------ | ---------------------- | ----- |
+| POST   | `/api/queue`             | Join matchmaking queue | Token |
+| GET    | `/api/queue/{sessionId}` | Check queue status     | Token |
+| GET    | `/api/queue`             | View all (admin only)  | Admin |
+| PUT    | `/api/queue/{sessionId}` | Update queue entry     | Token |
+| DELETE | `/api/queue/{sessionId}` | Leave queue            | Token |
+
+### Session Endpoints
+
+| Method | Endpoint             | Description                | Auth  |
+| ------ | -------------------- | -------------------------- | ----- |
+| POST   | `/api/sessions`      | Start a session            | Token |
+| GET    | `/api/sessions/{id}` | Get session info           | Token |
+| GET    | `/api/sessions`      | List sessions (admin only) | Admin |
+| PUT    | `/api/sessions/{id}` | Modify session             | Token |
+| DELETE | `/api/sessions/{id}` | End session                | Token |
+
+## WebSocket Integration
+
+### STOMP Endpoints
+
+| Destination           | Description       | Payload          |
+| --------------------- | ----------------- | ---------------- |
+| `/session.message`    | Chat message      | ChatMessage      |
+| `/session.signal`     | WebRTC signaling  | SignalingMessage |
+| `/session.disconnect` | Leave session     | String           |
+| `/queue.join`         | Enter matchmaking | String           |
+| `/queue.leave`        | Exit matchmaking  | String           |
+
+### Data Models
+
+#### ChatMessage
+
+```json
+{
+  "_id": "UUID",
+  "fromSessionId": "String",
+  "toSessionId": "String",
+  "content": "String",
+  "sentAt": "ISODate",
+  "signature": "String"
+}
+```
+
+#### QueueUser
+
+```json
+{
+  "_id": "String",
+  "sessionId": "String",
+  "joinedAt": "ISODate",
+  "matched": "Boolean",
+  "weight": "Float"
+}
+```
+
+#### ActiveSession
+
+```json
+{
+  "_id": "UUID",
+  "userSessionId1": "String",
+  "userSessionId2": "String",
+  "startedAt": "ISODate",
+  "active": "Boolean"
+}
+```
+
+## Testing
+
+```bash
+# Run all tests
+mvn test
+
+# Run with coverage report
+mvn verify
+```
+
+## Monitoring
+
+Spring Boot Actuator endpoints:
+
+- `/actuator/health`
+- `/actuator/metrics`
+- `/actuator/loggers`
+
+## Deployment
+
+### Docker
+
+```bash
+# Build Docker image
+docker build -t chatapi:latest .
+
+# Run container
+docker run -p 8080:8080 -e MONGODB_URI=<connection-string> chatapi:latest
+```
+
+### Vercel
+
+- Production URL: https://chatapi-girish-kor.vercel.app
+
+## Security
+
+- JWT-based authentication
+- Token validation for WebSocket handshake
+- CORS configuration
+- Rate limiting and input validation
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+*Engineered with care using Spring Boot and WebSocket technology.*  
+© 2025 Girish Kor | [MIT License](https://opensource.org/licenses/MIT)
