@@ -80,6 +80,13 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>io.github.classgraph</groupId>
+			<artifactId>classgraph</artifactId>
+			<version>4.8.157</version> <!-- Use latest -->
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
