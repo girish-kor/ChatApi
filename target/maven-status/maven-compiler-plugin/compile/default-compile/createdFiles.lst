@@ -1,0 +1,17 @@
+com\example\app\config\WebSocketConfig.class
+com\example\app\controllers\QueueController.class
+com\example\app\models\ActiveSession.class
+com\example\app\models\SignalingMessage.class
+com\example\app\AppApplication.class
+com\example\app\services\SessionService.class
+com\example\app\models\QueueUser.class
+com\example\app\config\WebConfig.class
+com\example\app\config\CorsConfig.class
+com\example\app\repositories\ChatMessageRepository.class
+com\example\app\repositories\ActiveSessionRepository.class
+com\example\app\models\ChatMessage.class
+com\example\app\repositories\QueueUserRepository.class
+com\example\app\controllers\ChatController.class
+com\example\app\services\QueueService.class
+com\example\app\controllers\SessionController.class
+com\example\app\services\ChatService.class
